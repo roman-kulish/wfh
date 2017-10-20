@@ -31,6 +31,10 @@ type CommandResponse struct {
 	Attachments  []Attachment `json:"attachments,omitempty"`
 }
 
+func (cr *CommandResponse) AddAttachment(attachment Attachment) {
+	cr.Attachments = append(cr.Attachments, attachment)
+}
+
 type Attachment struct {
 	Fallback   string  `json:"fallback,omitempty"`
 	Color      string  `json:"color,omitempty"`
