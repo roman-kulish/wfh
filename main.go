@@ -19,9 +19,9 @@ import (
 const (
 	endpoint    = "/wfh"
 	bucket      = "https://storage.googleapis.com/wfh/%x.jpg"
-	msgToday    = "@here %s is working from today"
-	msgTomorrow = "@here %s will work from home tomorrow"
-	msgMonday   = "@here %s will work from home on Monday"
+	msgToday    = "@here <@%s> is working from today"
+	msgTomorrow = "@here <@%s> will work from home tomorrow"
+	msgMonday   = "@here <@%s> will work from home on Monday"
 )
 
 type SlashCommandHandler struct {
@@ -84,7 +84,7 @@ func main() {
 				}
 			}
 
-			message = fmt.Sprintf(message, req.UserName)
+			message = fmt.Sprintf(message, req.UserId)
 			index := rand.Intn(250)
 
 			if index == 0 {
