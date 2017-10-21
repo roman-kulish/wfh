@@ -17,9 +17,9 @@ import (
 const (
 	Command     = "/wfh"
 	bucket      = "https://storage.googleapis.com/wfh/%x.jpg"
-	msgToday    = "@here <@%s> is working from home today"
-	msgTomorrow = "@here <@%s> will work from home tomorrow"
-	msgMonday   = "@here <@%s> will work from home on Monday"
+	msgToday    = "<!here> <@%s> is working from home today"
+	msgTomorrow = "<!here> <@%s> will work from home tomorrow"
+	msgMonday   = "<!here> <@%s> will work from home on Monday"
 )
 
 type SlashCommandHandler struct {
@@ -69,6 +69,8 @@ func (sc SlashCommandHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 func NewHandler() SlashCommandHandler {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	return SlashCommandHandler{
 		Handler: func(req slash.CommandRequest) (slash.CommandResponse, error) {
 			var message = msgToday
@@ -95,6 +97,7 @@ func NewHandler() SlashCommandHandler {
 			res := slash.NewInChannelCommandResponse(message)
 
 			res.AddAttachment(slash.Attachment{
+				Title:    "Excuse",
 				ImageUrl: fmt.Sprintf(bucket, hash),
 			})
 
