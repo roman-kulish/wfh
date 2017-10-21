@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"encoding/hex"
 	"math/rand"
 
 	"github.com/roman-kulish/wfh/slash"
@@ -17,7 +16,7 @@ import (
 
 const (
 	Command     = "/wfh"
-	bucket      = "https://storage.googleapis.com/wfh/%s.jpg"
+	bucket      = "https://storage.googleapis.com/wfh/%x.jpg"
 	msgToday    = "@here <@%s> is working from home today"
 	msgTomorrow = "@here <@%s> will work from home tomorrow"
 	msgMonday   = "@here <@%s> will work from home on Monday"
@@ -92,12 +91,11 @@ func NewHandler() SlashCommandHandler {
 			}
 
 			hash := sha1.Sum([]byte(strconv.Itoa(index)))
-			hashed := hex.EncodeToString(hash[:])
 
 			res := slash.NewInChannelCommandResponse(message)
 
 			res.AddAttachment(slash.Attachment{
-				ImageUrl: fmt.Sprintf(bucket, hashed),
+				ImageUrl: fmt.Sprintf(bucket, hash),
 			})
 
 			return res, nil
