@@ -12,20 +12,24 @@ import (
 	"os"
 	"strconv"
 
+	"encoding/hex"
+
 	"github.com/roman-kulish/wfh/slash"
 )
 
 const (
 	command     = "/wfh"
-	bucket      = "https://storage.googleapis.com/wfh/%x.jpg"
 	msgToday    = "<!here> <@%s> is working from home today"
 	msgTomorrow = "<!here> <@%s> will be working from home tomorrow"
 	msgMonday   = "<!here> <@%s> will be working from home on Monday"
 	imgTitle    = "My excuse is ..."
-	port        = 80
+	port        = 8080
 )
 
-var addr string
+var (
+	bucket string
+	addr   string
+)
 
 type slashCommandHandler struct {
 	Handler func(cmd slash.CommandRequest) (slash.CommandResponse, error)
@@ -86,7 +90,7 @@ func main() {
 			now := time.Now().In(loc)
 			then := time.Date(now.Year(), now.Month(), now.Day(), 10, 15, 0, 0, loc)
 
-			if now.Weekday() > 4 {
+			if now.Weekday() > 4 || now.Weekday() == 0 {
 				message = msgMonday
 			} else if now.After(then) {
 				message = msgTomorrow
@@ -100,12 +104,13 @@ func main() {
 			}
 
 			hash := sha1.Sum([]byte(strconv.Itoa(index)))
+			hashed := hex.EncodeToString(hash[:])
 
 			res := slash.NewInChannelCommandResponse(message)
 
 			res.AddAttachment(slash.Attachment{
 				Title:    imgTitle,
-				ImageUrl: fmt.Sprintf(bucket, hash),
+				ImageUrl: fmt.Sprintf(bucket, hashed),
 			})
 
 			return res, nil
