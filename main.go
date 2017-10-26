@@ -90,7 +90,7 @@ func main() {
 			now := time.Now().In(loc)
 			then := time.Date(now.Year(), now.Month(), now.Day(), 10, 15, 0, 0, loc)
 
-			if now.Weekday() > 4 || now.Weekday() == 0 {
+			if ( now.Weekday() > 4 && now.After(then) ) || now.Weekday() == 0 {
 				message = msgMonday
 			} else if now.After(then) {
 				message = msgTomorrow
