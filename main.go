@@ -84,16 +84,19 @@ func main() {
 
 	mux.Handle(command, slashCommandHandler{
 		Handler: func(req slash.CommandRequest) (slash.CommandResponse, error) {
-			var message = msgToday
+			var message string
 
 			loc, _ := time.LoadLocation("Australia/Sydney")
 			now := time.Now().In(loc)
 			then := time.Date(now.Year(), now.Month(), now.Day(), 10, 15, 0, 0, loc)
 
-			if ( now.Weekday() > 4 && now.After(then) ) || now.Weekday() == 0 {
+			switch true {
+			case now.Weekday() == 0 || now.Weekday() > 5 || (now.Weekday() == 5 && now.After(then)):
 				message = msgMonday
-			} else if now.After(then) {
+			case now.After(then):
 				message = msgTomorrow
+			default:
+				message = msgToday
 			}
 
 			message = fmt.Sprintf(message, req.UserId)
