@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	timezone     string
-	imageBaseUrl string
+	timezone       string
+	imageBaseUrl   string
+	numberOfImages uint
 )
 
 type slashCommandHandler struct {
@@ -86,7 +87,7 @@ func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	mux := *http.NewServeMux()
-	command, err := wfh.New(timezone, imageBaseUrl)
+	command, err := wfh.New(timezone, imageBaseUrl, numberOfImages)
 
 	if err != nil {
 		panic(err)
