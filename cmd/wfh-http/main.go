@@ -137,7 +137,6 @@ func main() {
 	}
 
 	go func() {
-		fmt.Println("starting server")
 		if err := server.ListenAndServe(); err != nil {
 			panic(err)
 		}
