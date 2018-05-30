@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -85,13 +84,11 @@ func (sch slashCommandHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 func main() {
 	var addr string
 
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	num, err := strconv.Atoi(numberOfImages)
 
 	if err != nil {
 		panic(err)
-	} else if num < 0 {
+	} else if num <= 0 {
 		panic("number of images must be a positive integer")
 	}
 

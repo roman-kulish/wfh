@@ -74,6 +74,8 @@ func (wfh *wfh) Handle(req slack.CommandRequest) (slack.CommandResponse, error) 
 	res := slack.NewInChannelCommandResponse(msg)
 
 	if wfh.ImageBaseUrl != "" && wfh.NumberOfImages > 0 {
+		rand.Seed(time.Now().UTC().UnixNano())
+
 		index := rand.Intn(int(wfh.NumberOfImages))
 
 		if index == 0 {
