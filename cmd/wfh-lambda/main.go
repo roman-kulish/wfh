@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -18,9 +20,10 @@ var (
 	timezone       string
 	imageBaseUrl   string
 	numberOfImages string
+	client         *http.Client
+	command        *wfh.CommandHandler
 
-	ErrEmptyRequest           = errors.New("HTTP POST body is empty")
-	ErrNegativeNumberOfImages = errors.New("number of images must be a positive integer")
+	ErrEmptyRequest = errors.New("HTTP POST body is empty")
 )
 
 func ParseBody(req string) (slack.CommandRequest, error) {
@@ -50,25 +53,11 @@ func ParseBody(req string) (slack.CommandRequest, error) {
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var jsonData bytes.Buffer
 
-	num, err := strconv.Atoi(numberOfImages)
-
-	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
-	} else if num <= 0 {
-		return events.APIGatewayProxyResponse{}, ErrNegativeNumberOfImages
-	}
-
 	if len(request.Body) < 1 {
 		return events.APIGatewayProxyResponse{}, ErrEmptyRequest
 	}
 
 	req, err := ParseBody(request.Body)
-
-	if err != nil {
-		return events.APIGatewayProxyResponse{}, err
-	}
-
-	command, err := wfh.New(timezone, imageBaseUrl, uint(num))
 
 	if err != nil {
 		return events.APIGatewayProxyResponse{}, err
@@ -87,8 +76,9 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, err
 	}
 
+	client.Post(req.ResponseUrl, "application/json", &jsonData)
+
 	return events.APIGatewayProxyResponse{
-		Body:       jsonData.String(),
 		StatusCode: 200,
 	}, nil
 }
@@ -97,6 +87,24 @@ func main() {
 	timezone = os.Getenv("WFH_TIMEZONE")
 	imageBaseUrl = os.Getenv("WFH_IMAGE_BASE_URL")
 	numberOfImages = os.Getenv("WFH_NUMBER_OF_IMAGES")
+
+	num, err := strconv.Atoi(numberOfImages)
+
+	if err != nil {
+		panic(err)
+	} else if num <= 0 {
+		panic("number of images must be a positive integer")
+	}
+
+	command, err = wfh.New(timezone, imageBaseUrl, uint(num))
+
+	if err != nil {
+		panic(err)
+	}
+
+	client = &http.Client{
+		Timeout: time.Duration(10 * time.Second),
+	}
 
 	lambda.Start(Handler)
 }

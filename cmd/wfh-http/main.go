@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/roman-kulish/wfh/internal/slack"
@@ -17,6 +18,8 @@ var (
 	timezone       string
 	imageBaseUrl   string
 	numberOfImages string
+	client         *http.Client
+	wg             sync.WaitGroup
 )
 
 type slashCommandHandler struct {
@@ -78,7 +81,14 @@ func (sch slashCommandHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData.Bytes())
+
+	wg.Add(1)
+
+	go func() {
+		client.Post(req.ResponseUrl, "application/json", &jsonData)
+
+		wg.Done()
+	}()
 }
 
 func main() {
@@ -96,6 +106,10 @@ func main() {
 
 	if err != nil {
 		panic(err)
+	}
+
+	client = &http.Client{
+		Timeout: time.Duration(10 * time.Second),
 	}
 
 	mux := *http.NewServeMux()
@@ -123,4 +137,6 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		panic(err)
 	}
+
+	wg.Wait()
 }

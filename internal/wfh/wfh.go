@@ -20,13 +20,13 @@ const (
 	// epsilon     = "..."
 )
 
-type wfh struct {
+type CommandHandler struct {
 	Location       *time.Location
 	ImageBaseUrl   string
 	NumberOfImages uint
 }
 
-func New(timezone, imageBaseUrl string, numberOfImages uint) (*wfh, error) {
+func New(timezone, imageBaseUrl string, numberOfImages uint) (*CommandHandler, error) {
 	var location *time.Location
 	var err error
 
@@ -48,10 +48,10 @@ func New(timezone, imageBaseUrl string, numberOfImages uint) (*wfh, error) {
 		imageBaseUrl = imageBaseUrl + "%x.jpg"
 	}
 
-	return &wfh{Location: location, ImageBaseUrl: imageBaseUrl, NumberOfImages: numberOfImages}, nil
+	return &CommandHandler{Location: location, ImageBaseUrl: imageBaseUrl, NumberOfImages: numberOfImages}, nil
 }
 
-func (wfh *wfh) Handle(req slack.CommandRequest) (slack.CommandResponse, error) {
+func (wfh *CommandHandler) Handle(req slack.CommandRequest) (slack.CommandResponse, error) {
 	var msg string
 
 	if req.Command != command {
