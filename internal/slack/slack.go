@@ -1,13 +1,4 @@
-package slash
-
-import (
-	"net/http"
-)
-
-const (
-	inChannel = "in_channel"
-	ephemeral = "ephemeral"
-)
+package slack
 
 type CommandRequest struct {
 	Token          string
@@ -59,38 +50,9 @@ type Field struct {
 	Short string `json:"short"`
 }
 
-func NewCommandResponse(text string) CommandResponse {
-	return CommandResponse{
-		ResponseType: ephemeral,
-		Text:         text,
-	}
-}
-
 func NewInChannelCommandResponse(text string) CommandResponse {
 	return CommandResponse{
-		ResponseType: inChannel,
+		ResponseType: "in_channel",
 		Text:         text,
 	}
-}
-
-func NewCommandRequest(r *http.Request) (CommandRequest, error) {
-	if err := r.ParseForm(); err != nil {
-		return CommandRequest{}, err
-	}
-
-	return CommandRequest{
-		Token:          r.PostForm.Get("token"),
-		TeamId:         r.PostForm.Get("team_id"),
-		TeamDomain:     r.PostForm.Get("team_domain"),
-		EnterpriseId:   r.PostForm.Get("enterprise_id"),
-		EnterpriseName: r.PostForm.Get("enterprise_name"),
-		ChannelId:      r.PostForm.Get("channel_id"),
-		ChannelName:    r.PostForm.Get("channel_name"),
-		UserId:         r.PostForm.Get("user_id"),
-		UserName:       r.PostForm.Get("user_name"),
-		Command:        r.PostForm.Get("command"),
-		Text:           r.PostForm.Get("text"),
-		ResponseUrl:    r.PostForm.Get("response_url"),
-		TriggerId:      r.PostForm.Get("trigger_id"),
-	}, nil
 }
