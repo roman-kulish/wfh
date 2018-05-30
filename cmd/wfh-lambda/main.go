@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"net/http"
 	"net/url"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -20,7 +18,6 @@ var (
 	timezone       string
 	imageBaseUrl   string
 	numberOfImages string
-	client         *http.Client
 	command        *wfh.CommandHandler
 
 	ErrEmptyRequest = errors.New("HTTP POST body is empty")
@@ -76,10 +73,9 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 		return events.APIGatewayProxyResponse{}, err
 	}
 
-	client.Post(req.ResponseUrl, "application/json", &jsonData)
-
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
+		Body:       jsonData.String(),
 	}, nil
 }
 
@@ -100,10 +96,6 @@ func main() {
 
 	if err != nil {
 		panic(err)
-	}
-
-	client = &http.Client{
-		Timeout: time.Duration(10 * time.Second),
 	}
 
 	lambda.Start(Handler)
