@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"strconv"
 	"sync"
 	"time"
@@ -134,7 +136,23 @@ func main() {
 		IdleTimeout:  time.Second * 10,
 	}
 
-	if err := server.ListenAndServe(); err != nil {
+	go func() {
+		fmt.Println("starting server")
+		if err := server.ListenAndServe(); err != nil {
+			panic(err)
+		}
+	}()
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+
+	<-quit
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
 		panic(err)
 	}
 
