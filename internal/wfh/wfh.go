@@ -21,11 +21,12 @@ const (
 )
 
 type wfh struct {
-	Location     *time.Location
-	ImageBaseUrl string
+	Location       *time.Location
+	ImageBaseUrl   string
+	NumberOfImages uint
 }
 
-func New(timezone, imageBaseUrl string) (*wfh, error) {
+func New(timezone, imageBaseUrl string, numberOfImages uint) (*wfh, error) {
 	var location *time.Location
 	var err error
 
@@ -47,7 +48,7 @@ func New(timezone, imageBaseUrl string) (*wfh, error) {
 		imageBaseUrl = imageBaseUrl + "%x.jpg"
 	}
 
-	return &wfh{Location: location, ImageBaseUrl: imageBaseUrl}, nil
+	return &wfh{Location: location, ImageBaseUrl: imageBaseUrl, NumberOfImages: numberOfImages}, nil
 }
 
 func (wfh *wfh) Handle(req slack.CommandRequest) (slack.CommandResponse, error) {
@@ -70,17 +71,17 @@ func (wfh *wfh) Handle(req slack.CommandRequest) (slack.CommandResponse, error) 
 	}
 
 	msg = fmt.Sprintf(msg, req.UserId)
-	index := rand.Intn(250)
-
-	if index == 0 {
-		index++
-	}
-
-	hash := sha1.Sum([]byte(strconv.Itoa(index)))
-
 	res := slack.NewInChannelCommandResponse(msg)
 
-	if wfh.ImageBaseUrl != "" {
+	if wfh.ImageBaseUrl != "" && wfh.NumberOfImages > 0 {
+		index := rand.Intn(250)
+
+		if index == 0 {
+			index++
+		}
+
+		hash := sha1.Sum([]byte(strconv.Itoa(index)))
+
 		res.AddAttachment(slack.Attachment{
 			Title:    imgTitle,
 			ImageUrl: fmt.Sprintf(wfh.ImageBaseUrl, hash),
