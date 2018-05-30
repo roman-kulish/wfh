@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/roman-kulish/wfh/internal/slack"
@@ -16,7 +17,7 @@ import (
 var (
 	timezone       string
 	imageBaseUrl   string
-	numberOfImages uint
+	numberOfImages string
 )
 
 type slashCommandHandler struct {
@@ -86,12 +87,21 @@ func main() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	mux := *http.NewServeMux()
-	command, err := wfh.New(timezone, imageBaseUrl, numberOfImages)
+	num, err := strconv.Atoi(numberOfImages)
+
+	if err != nil {
+		panic(err)
+	} else if num < 0 {
+		panic("number of images must be a positive integer")
+	}
+
+	command, err := wfh.New(timezone, imageBaseUrl, uint(num))
 
 	if err != nil {
 		panic(err)
 	}
+
+	mux := *http.NewServeMux()
 
 	mux.Handle("/wfh", slashCommandHandler{
 		Handler: func(cmd slack.CommandRequest) (slack.CommandResponse, error) {
