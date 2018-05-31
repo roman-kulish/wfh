@@ -16,8 +16,7 @@ const (
 	msgToday    = "<!here> <@%s> is working from home today"
 	msgTomorrow = "<!here> <@%s> will be working from home tomorrow"
 	msgMonday   = "<!here> <@%s> will be working from home on Monday"
-	imgTitle    = "My excuse is %s"
-	// epsilon     = "..."
+	imgTitle    = "My excuse is ..."
 )
 
 type CommandHandler struct {
