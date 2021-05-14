@@ -2,18 +2,18 @@ package slack
 
 type CommandRequest struct {
 	Token          string
-	TeamId         string
+	TeamID         string
 	TeamDomain     string
-	EnterpriseId   string
+	EnterpriseID   string
 	EnterpriseName string
-	ChannelId      string
+	ChannelID      string
 	ChannelName    string
-	UserId         string
+	UserID         string
 	UserName       string
 	Command        string
 	Text           string
-	ResponseUrl    string
-	TriggerId      string
+	ResponseURL    string
+	TriggerID      string
 }
 
 type CommandResponse struct {
@@ -37,11 +37,11 @@ type Attachment struct {
 	TitleLink  string  `json:"title_link,omitempty"`
 	Text       string  `json:"text,omitempty"`
 	Fields     []Field `json:"fields,omitempty"`
-	ImageUrl   string  `json:"image_url,omitempty"`
-	ThumbUrl   string  `json:"thumb_url,omitempty"`
+	ImageURL   string  `json:"image_url,omitempty"`
+	ThumbURL   string  `json:"thumb_url,omitempty"`
 	Footer     string  `json:"footer,omitempty"`
 	FooterIcon string  `json:"footer_icon,omitempty"`
-	Ts         int     `json:"ts,omitempty"`
+	Timestamp  int64   `json:"ts,omitempty"`
 }
 
 type Field struct {

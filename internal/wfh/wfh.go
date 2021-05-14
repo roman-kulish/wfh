@@ -13,25 +13,24 @@ import (
 
 const (
 	command     = "/wfh"
-	msgToday    = "<!here> <@%s> is working from home today"
-	msgTomorrow = "<!here> <@%s> will be working from home tomorrow"
-	msgMonday   = "<!here> <@%s> will be working from home on Monday"
+	msgToday    = "<@%s> is working from home today"
+	msgTomorrow = "<@%s> will be working from home tomorrow"
+	msgMonday   = "<@%s> will be working from home on Monday"
 	imgTitle    = "My excuse is ..."
 )
 
 type CommandHandler struct {
 	Location       *time.Location
-	ImageBaseUrl   string
+	ImageBaseURL   string
 	NumberOfImages uint
 }
 
-func New(timezone, imageBaseUrl string, numberOfImages uint) (*CommandHandler, error) {
+func New(timezone, imageBaseURL string, numberOfImages uint) (*CommandHandler, error) {
 	var location *time.Location
 	var err error
 
 	if timezone != "" {
 		location, err = time.LoadLocation(timezone)
-
 		if err != nil {
 			return nil, err
 		}
@@ -39,15 +38,15 @@ func New(timezone, imageBaseUrl string, numberOfImages uint) (*CommandHandler, e
 		location = time.Local
 	}
 
-	if imageBaseUrl != "" {
-		if !strings.HasSuffix(imageBaseUrl, "/") {
-			imageBaseUrl = imageBaseUrl + "/"
+	if imageBaseURL != "" {
+		if !strings.HasSuffix(imageBaseURL, "/") {
+			imageBaseURL += "/"
 		}
 
-		imageBaseUrl = imageBaseUrl + "%x.jpg"
+		imageBaseURL += "%x.jpg"
 	}
 
-	return &CommandHandler{Location: location, ImageBaseUrl: imageBaseUrl, NumberOfImages: numberOfImages}, nil
+	return &CommandHandler{Location: location, ImageBaseURL: imageBaseURL, NumberOfImages: numberOfImages}, nil
 }
 
 func (wfh *CommandHandler) Handle(req slack.CommandRequest) (slack.CommandResponse, error) {
@@ -60,7 +59,7 @@ func (wfh *CommandHandler) Handle(req slack.CommandRequest) (slack.CommandRespon
 	now := time.Now().In(wfh.Location)
 	then := time.Date(now.Year(), now.Month(), now.Day(), 10, 15, 0, 0, wfh.Location)
 
-	switch true {
+	switch {
 	case now.Weekday() == 0 || now.Weekday() > 5 || (now.Weekday() == 5 && now.After(then)):
 		msg = msgMonday
 	case now.After(then):
@@ -69,14 +68,21 @@ func (wfh *CommandHandler) Handle(req slack.CommandRequest) (slack.CommandRespon
 		msg = msgToday
 	}
 
-	msg = fmt.Sprintf(msg, req.UserId)
+	msg = fmt.Sprintf(msg, req.UserID)
+
+	if txt := strings.TrimSpace(req.Text); txt != "" {
+		txt = strings.Trim(txt, "_~*`")
+		txt = "_" + txt + "_"
+
+		msg = msg + ": " + txt // echo text back
+	}
+
 	res := slack.NewInChannelCommandResponse(msg)
 
-	if wfh.ImageBaseUrl != "" && wfh.NumberOfImages > 0 {
+	if wfh.ImageBaseURL != "" && wfh.NumberOfImages > 0 {
 		rand.Seed(time.Now().UTC().UnixNano())
 
 		index := rand.Intn(int(wfh.NumberOfImages))
-
 		if index == 0 {
 			index++
 		}
@@ -85,7 +91,7 @@ func (wfh *CommandHandler) Handle(req slack.CommandRequest) (slack.CommandRespon
 
 		res.AddAttachment(slack.Attachment{
 			Title:    imgTitle,
-			ImageUrl: fmt.Sprintf(wfh.ImageBaseUrl, hash),
+			ImageURL: fmt.Sprintf(wfh.ImageBaseURL, hash),
 		})
 	}
 
